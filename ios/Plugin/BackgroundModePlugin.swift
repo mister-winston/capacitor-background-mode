@@ -7,12 +7,20 @@ import Capacitor
  */
 @objc(BackgroundModePlugin)
 public class BackgroundModePlugin: CAPPlugin {
-    private let implementation = BackgroundMode()
-
-    @objc func echo(_ call: CAPPluginCall) {
-        let value = call.getString("value") ?? ""
-        call.resolve([
-            "value": implementation.echo(value)
-        ])
+    private lazy var implementation = BackgroundMode(plugin: self)
+    
+    override public func load() {
+        super.load()
+        implementation.load()
+    }
+    
+    @objc func enable(_ call: CAPPluginCall) {
+        implementation.enable()
+        call.resolve()
+    }
+    
+    @objc func disable(_ call: CAPPluginCall) {
+        implementation.disable()
+        call.resolve()
     }
 }
