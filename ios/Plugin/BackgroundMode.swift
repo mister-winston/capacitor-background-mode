@@ -21,19 +21,21 @@ import AVFAudio
     }
     
     public func enable() {
-        if enabled { return }
-        enabled = true
+        if self.enabled { return }
+        self.enabled = true
     }
     
     public func disable() {
-        if enabled { return }
-        enabled = false
-        stopKeepingAwake()
+        if self.enabled { return }
+        self.enabled = false
+        self.stopKeepingAwake()
     }
     
     func configureAudioPlayer() {
         guard let url = Bundle(for: BackgroundModePlugin.self)
             .url(forResource: "appbeep", withExtension: "wav") else {
+            print("Didn't load audio file")
+            self.plugin.notifyListeners("error", data: ["message": "Didn't load audio file"])
             return
         }
         
@@ -45,7 +47,8 @@ import AVFAudio
             
             self.audioPlayer = audioPlayer
         } catch {
-            NSLog("Audio error: \(error).")
+            print("Audio error: \(error).")
+            self.plugin.notifyListeners("error", data: ["message": error.localizedDescription])
         }
     }
     
@@ -57,7 +60,8 @@ import AVFAudio
             try audioSession.setCategory(.playback, mode: .default, options: [])
             try audioSession.setActive(true)
         } catch {
-            NSLog("Audio error: \(error).")
+            print("Audio error: \(error).")
+            self.plugin.notifyListeners("error", data: ["message": error.localizedDescription])
         }
     }
     
@@ -81,21 +85,21 @@ import AVFAudio
     }
     
     @objc private func keepAwake() {
-        if !enabled { return }
-        audioPlayer?.play()
+        if !self.enabled { return }
+        self.audioPlayer?.play()
         self.plugin.notifyListeners("activate", data: [:])
     }
     
     @objc private func stopKeepingAwake() {
-        if audioPlayer?.isPlaying == true {
+        if self.audioPlayer?.isPlaying == true {
             self.plugin.notifyListeners("deactivate", data: [:])
         }
         
-        audioPlayer?.pause()
+        self.audioPlayer?.pause()
     }
     
     @objc private func handleAudioSessionInterruption(_ notification: Notification) {
         self.plugin.notifyListeners("deactivate", data: [:])
-        keepAwake()
+        self.keepAwake()
     }
 }
