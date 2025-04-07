@@ -14,7 +14,6 @@ import AVFAudio
     }
     
     public func load() {
-        WebViewSwizzler.swizzleWebViewEngine()
         self.configureAudioPlayer()
         self.configureAudioSession()
         self.observeLifeCycle()

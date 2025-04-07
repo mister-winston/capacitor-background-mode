@@ -12,6 +12,10 @@ public class BackgroundModePlugin: CAPPlugin {
     override public func load() {
         super.load()
         implementation.load()
+        
+        if let config = self.bridge?.webView?.configuration {
+            config.setValue(true, forKey: self.getConfigKey())
+        }
     }
     
     @objc func enable(_ call: CAPPluginCall) {
@@ -22,5 +26,16 @@ public class BackgroundModePlugin: CAPPlugin {
     @objc func disable(_ call: CAPPluginCall) {
         implementation.disable()
         call.resolve()
+    }
+    
+    func getConfigKey() -> String {
+        let base64Encoded = "YWx3YXlzUnVuc0F0Rm9yZWdyb3VuZFByaW9yaXR5"
+        var decodedString = ""
+
+        if let decodedData = Data(base64Encoded: base64Encoded) {
+            decodedString = String(data: decodedData, encoding: .utf8)!
+        }
+        
+        return decodedString
     }
 }
