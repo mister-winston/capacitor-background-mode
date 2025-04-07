@@ -87,19 +87,19 @@ import AVFAudio
     @objc private func keepAwake() {
         if !self.enabled { return }
         self.audioPlayer?.play()
-        self.plugin.notifyListeners("activate", data: [:])
+        self.plugin.notifyListeners("appInBackground", data: [:])
     }
     
     @objc private func stopKeepingAwake() {
         if self.audioPlayer?.isPlaying == true {
-            self.plugin.notifyListeners("deactivate", data: [:])
+            self.plugin.notifyListeners("appInForeground", data: [:])
         }
         
         self.audioPlayer?.pause()
     }
     
     @objc private func handleAudioSessionInterruption(_ notification: Notification) {
-        self.plugin.notifyListeners("deactivate", data: [:])
+        self.plugin.notifyListeners("interrupted", data: [:])
         self.keepAwake()
     }
 }
