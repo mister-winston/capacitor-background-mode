@@ -17,8 +17,7 @@ import com.getcapacitor.annotation.PermissionCallback;
 @CapacitorPlugin(
     name = "BackgroundMode",
     permissions = {
-        @Permission(alias = BackgroundModePlugin.BACKGROUND_MODE_NOTIFICATIONS_PERMISSION, strings = { Manifest.permission.POST_NOTIFICATIONS }),
-        @Permission(alias = BackgroundModePlugin.BACKGROUND_MODE_MICROPHONE_PERMISSION, strings = { Manifest.permission.FOREGROUND_SERVICE_MICROPHONE, Manifest.permission.RECORD_AUDIO })
+        @Permission(alias = BackgroundModePlugin.BACKGROUND_MODE_NOTIFICATIONS_PERMISSION, strings = { Manifest.permission.POST_NOTIFICATIONS })
     }
 )
 public class BackgroundModePlugin extends Plugin {
@@ -26,7 +25,6 @@ public class BackgroundModePlugin extends Plugin {
     private BackgroundMode backgroundMode;
 
     static final String BACKGROUND_MODE_NOTIFICATIONS_PERMISSION = "notifications";
-    static final String BACKGROUND_MODE_MICROPHONE_PERMISSION = "microphone";
 
     public void load() {
         AppCompatActivity activity = getActivity();
@@ -216,27 +214,6 @@ public class BackgroundModePlugin extends Plugin {
         JSObject permissionsResultJSON = new JSObject();
         permissionsResultJSON.put(BACKGROUND_MODE_NOTIFICATIONS_PERMISSION, getPermissionText(backgroundMode.areNotificationsEnabled()));
         call.resolve(permissionsResultJSON);
-    }
-
-    @PluginMethod
-    public void checkMicrophonePermission(PluginCall call) {
-        microphonePermissionCallback(call);
-    }
-
-    @PluginMethod
-    public void requestMicrophonePermission(PluginCall call) {
-        if (getPermissionState(BACKGROUND_MODE_MICROPHONE_PERMISSION) == PermissionState.GRANTED) {
-            microphonePermissionCallback(call);
-        } else {
-            requestPermissionForAlias(BACKGROUND_MODE_MICROPHONE_PERMISSION, call, "microphonePermissionCallback");
-        }
-    }
-
-    @PermissionCallback
-    private void microphonePermissionCallback(PluginCall call) {
-        JSObject permissionResultJSON = new JSObject();
-        permissionResultJSON.put(BACKGROUND_MODE_MICROPHONE_PERMISSION, getPermissionText(backgroundMode.isMicrophoneEnabled()));
-        call.resolve(permissionResultJSON);
     }
 
     private String getPermissionText(boolean enabled) {

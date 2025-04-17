@@ -7,14 +7,11 @@ import static android.view.WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD;
 import static android.view.WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
 import static android.view.WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
@@ -27,7 +24,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.core.content.ContextCompat;
 
 public class BackgroundMode {
 
@@ -116,26 +112,6 @@ public class BackgroundMode {
         return notificationManager.areNotificationsEnabled();
     }
 
-    public boolean isMicrophonePermissionGranted() {
-        boolean recordAudioGranted = ContextCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
-        boolean foregroundServiceMicrophoneGranted = true;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            foregroundServiceMicrophoneGranted = ContextCompat.checkSelfPermission(mContext, Manifest.permission.FOREGROUND_SERVICE_MICROPHONE) == PackageManager.PERMISSION_GRANTED;
-        }
-
-        return recordAudioGranted && foregroundServiceMicrophoneGranted;
-    }
-
-    public boolean isMicrophoneMuted() {
-        AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-        return audioManager != null && audioManager.isMicrophoneMute();
-    }
-
-    public boolean isMicrophoneEnabled() {
-        return isMicrophonePermissionGranted() && !isMicrophoneMuted();
-    }
-
     public void onResume() {
         mInBackground = false;
         assert backgroundModeEventListener != null;
@@ -158,14 +134,16 @@ public class BackgroundMode {
     }
 
     private void startService() {
-        if (mIsDisabled || mShouldUnbind || !isMicrophoneEnabled() || !areNotificationsEnabled()) {
+        if (mIsDisabled || mShouldUnbind || !areNotificationsEnabled()) {
             return;
         }
 
         Intent intent = new Intent(mContext, BackgroundModeService.class);
 
         mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-        mContext.startForegroundService(intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mContext.startForegroundService(intent);
+        }
         mShouldUnbind = true;
     }
 
